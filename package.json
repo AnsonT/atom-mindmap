@@ -1,0 +1,16 @@
+{
+  "name": "atom-mindmap",
+  "main": "./lib/atom-mindmap",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "repository": "https://github.com/atom/atom-mindmap",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+    "fs-plus": "2.x",
+    "loophole": "*",
+    "pathwatcher": "^2.0.10"
+  }
+}
