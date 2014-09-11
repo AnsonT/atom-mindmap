@@ -15,25 +15,22 @@ class AtomMindMapView extends ScrollView
       console.warn "Could not open file"
 
   @content: ->
-    @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
-
+    #@iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
+    @div =>
+      @button "Send To Frame", id:'sendMessage', click: 'onClick'
+      @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
 
   initialize: (path) ->
     super
     @filePath = path
     @file = new File(path)
+    @subscribe @file, 'content-changed', => @updateMindMap
 
-    @channel = new MessageChannel()
-    console.log @channel
+    window.addEventListener "message", @handleMessage, false
 
-    window.addEventListener "message",
-      (e) ->
-        console.log(e)
-
-        $("#container")[0]?.contentWindow.postMessage {type: "open", file: path}, "*"
-      , false
-
-    window.postMessage "test", "*"
+  onClick: ->
+    console.log 'Send To Frame'
+    @iframePort.postMessage "Sent From Parent Message"
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -51,4 +48,23 @@ class AtomMindMapView extends ScrollView
 
   # Tear down any state and detach
   destroy: ->
+    window.removeEventListener "message", @handleMessage, false
     @detach()
+
+  updateMindMap: ->
+    console.log 'updateMindMap'
+    @data = JSON.parse(fs.readFileSync(@filePath, encoding: 'utf8'))
+    if @iframePort
+      console.log "send updateData message"
+      @iframePort.postMessage({message: "updateData", data: @data})
+
+  handleMessage: (e) =>
+    if e.data is 'Initialize-Port'
+      @iframePort = e.ports[0]
+      @iframePort.onmessage = @handleFrameMessage
+      @updateMindMap()
+
+
+  handleFrameMessage: (e) ->
+    console.log 'from iFrame'
+    console.log e

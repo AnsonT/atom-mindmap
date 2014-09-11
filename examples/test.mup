@@ -1,0 +1,11 @@
+{
+  "title": "Mindmup",
+  "id": "1",
+  "formatVersion": "2",
+  "idea": [
+    {
+        "title": "idea1",
+        "id": "2"
+    }
+  ]
+}
