@@ -15,7 +15,6 @@ class AtomMindMapView extends ScrollView
       console.warn "Could not open file"
 
   @content: ->
-    #@iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
     @div =>
       @button "Send To Frame", id:'sendMessage', click: 'onClick'
       @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
@@ -25,12 +24,10 @@ class AtomMindMapView extends ScrollView
     @filePath = path
     @file = new File(path)
     @subscribe @file, 'content-changed', => @updateMindMap
-
     window.addEventListener "message", @handleMessage, false
 
   onClick: ->
-    console.log 'Send To Frame'
-    @iframePort.postMessage "Sent From Parent Message"
+    @framePort.postMessage message: 'saveData'
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -52,19 +49,20 @@ class AtomMindMapView extends ScrollView
     @detach()
 
   updateMindMap: ->
-    console.log 'updateMindMap'
     @data = JSON.parse(fs.readFileSync(@filePath, encoding: 'utf8'))
-    if @iframePort
-      console.log "send updateData message"
-      @iframePort.postMessage({message: "updateData", data: @data})
+    if @framePort
+      @framePort.postMessage({message: "updateData", data: @data})
 
   handleMessage: (e) =>
-    if e.data is 'Initialize-Port'
-      @iframePort = e.ports[0]
-      @iframePort.onmessage = @handleFrameMessage
-      @updateMindMap()
+    console.log 'handle'
+    unless @frameId
+      if e.data?.message is 'Initialize-Port'
+        @framePort = e.ports[0]
+        @framePort.onmessage = @handleFrameMessage
+        @frameId = e.data.frameId
+        @updateMindMap()
 
 
-  handleFrameMessage: (e) ->
-    console.log 'from iFrame'
+  handleFrameMessage: (e) =>
+    console.log @getTitle()
     console.log e
