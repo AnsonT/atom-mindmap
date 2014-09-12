@@ -43,19 +43,19 @@
 }
 .mapjs-node.activated {
 	outline: 0;
-	border: 3px dashed #2E9AFE;
+	border: 3px dotted #2E9AFE;
 	margin: -2px;
 }
 .mapjs-node:focus {
 	outline: 0;
-	border: 3px dashed green;
+	border: 3px dotted green;
 	margin: -2px;
 	box-shadow: 5px 5px 5px green;
 	z-index: 3;
 }
 .mapjs-node.selected {
 	outline: 0;
-	border: 3px dashed #2E9AFE;
+	border: 3px dotted #2E9AFE;
 	margin: -2px;
 	box-shadow: 5px 5px 5px black;
 	z-index: 3;

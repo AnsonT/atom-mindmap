@@ -15,19 +15,32 @@ class AtomMindMapView extends ScrollView
       console.warn "Could not open file"
 
   @content: ->
-    @div =>
-      @button "Send To Frame", id:'sendMessage', click: 'onClick'
-      @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
+#    @div =>
+#      @button "Send To Frame", id:'sendMessage', click: 'onClick'
+    @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
 
   initialize: (path) ->
     super
     @filePath = path
     @file = new File(path)
+    @changed = false
     @subscribe @file, 'content-changed', => @updateMindMap
     window.addEventListener "message", @handleMessage, false
 
-  onClick: ->
-    @framePort.postMessage message: 'saveData'
+  isModified: ->
+    return @changed
+
+  isEmpty: ->
+    return false
+
+  shouldPromptToSave: ->
+    @isModified()
+
+  save: ->
+    @framePort.postMessage message: 'saveData', path: @filePath
+
+  saveAs: (path) ->
+    @framePort.postMessage message: 'saveData', path: path
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -42,6 +55,14 @@ class AtomMindMapView extends ScrollView
   getUri: ->
     @filePath
 
+  getModel: ->
+    console.log "getModel"
+    return this
+
+  setChanged: (isChanged) =>
+    unless @changed is isChanged
+      @changed = isChanged
+      @trigger "modified-status-changed"
 
   # Tear down any state and detach
   destroy: ->
@@ -52,9 +73,10 @@ class AtomMindMapView extends ScrollView
     @data = JSON.parse(fs.readFileSync(@filePath, encoding: 'utf8'))
     if @framePort
       @framePort.postMessage({message: "updateData", data: @data})
+      @setChanged false
+
 
   handleMessage: (e) =>
-    console.log 'handle'
     unless @frameId
       if e.data?.message is 'Initialize-Port'
         @framePort = e.ports[0]
@@ -64,5 +86,12 @@ class AtomMindMapView extends ScrollView
 
 
   handleFrameMessage: (e) =>
-    console.log @getTitle()
-    console.log e
+    if (e.data?.frameId is @frameId)
+      if e.data?.message is 'changed'
+        @setChanged true
+      else if e.data?.message is 'saveData'
+
+        @filePath = e.data?.path
+        @file = new File(@filePath)
+        fs.writeFileSync(@filePath, e.data.data, encoding: 'utf8')
+        @setChanged false
