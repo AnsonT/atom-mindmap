@@ -1,8 +1,9 @@
 # See https://atom.io/docs/latest/creating-a-package#menus for more details
 'context-menu':
   '.overlayer':
-      'Enable atom-mindmap': 'atom-mindmap:toggle'
-      'Zoom In atom-mindmap': 'atom-mindmap:zoomIn'
+      'Zoom In': 'atom-mindmap:zoomIn',
+      'Zoom Out': 'atom-mindmap:zoomOut',
+      'Reset Zoom': 'atom-mindmap:zoomReset'
 
 'menu': [
   {

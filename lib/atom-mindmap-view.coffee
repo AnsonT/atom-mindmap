@@ -17,7 +17,7 @@ class AtomMindMapView extends ScrollView
   @content: ->
 #    @div =>
 #      @button "Send To Frame", id:'sendMessage', click: 'onClick'
-    @iframe id:'container', class: 'atom-mindmap', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
+    @iframe id:'container', class: 'atom-mindmap overlayer', tabindex: -1, src: "atom://atom-mindmap/lib/mindmup/index.html", name: 'disable-x-frame-options'
 
   initialize: (path) ->
     super
@@ -95,3 +95,5 @@ class AtomMindMapView extends ScrollView
         @file = new File(@filePath)
         fs.writeFileSync(@filePath, e.data.data, encoding: 'utf8')
         @setChanged false
+      else if e.data.message is 'contextMenu'
+        console.log e.data
